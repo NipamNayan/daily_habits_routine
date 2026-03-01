@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily To-Do Tracker</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>&#x1F4CB; Daily To-Do Tracker</h1>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="today">Today</button>
+      <button class="tab" data-view="week">Week</button>
+      <button class="tab" data-view="month">Month</button>
+    </nav>
+
+    <!-- TODAY VIEW -->
+    <section id="view-today" class="view active">
+      <div class="view-header">
+        <button id="today-prev" class="nav-btn">&#9664;</button>
+        <h2 id="today-date-label"></h2>
+        <button id="today-next" class="nav-btn">&#9654;</button>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="today-progress"></div>
+      </div>
+      <p class="progress-text" id="today-progress-text"></p>
+      <ul id="task-list" class="task-list"></ul>
+
+      <!-- Manage button -->
+      <button id="manage-btn" class="manage-btn">&#9881; Manage Tasks</button>
+
+      <!-- Edit panel (hidden by default) -->
+      <div id="edit-panel" class="edit-panel hidden">
+        <div class="edit-panel-header">
+          <h3>Manage Tasks</h3>
+          <button id="edit-panel-close" class="edit-close-btn">&times;</button>
+        </div>
+        <ul id="edit-task-list" class="edit-task-list"></ul>
+        <div class="add-task-row">
+          <input type="text" id="new-task-input" placeholder="New task name..." />
+          <button id="add-task-btn" class="add-btn">+ Add</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEEK VIEW -->
+    <section id="view-week" class="view">
+      <div class="view-header">
+        <button id="week-prev" class="nav-btn">&#9664;</button>
+        <h2 id="week-label"></h2>
+        <button id="week-next" class="nav-btn">&#9654;</button>
+      </div>
+      <div class="table-wrap">
+        <table id="week-table" class="grid-table">
+          <thead><tr id="week-thead"></tr></thead>
+          <tbody id="week-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MONTH VIEW -->
+    <section id="view-month" class="view">
+      <div class="view-header">
+        <button id="month-prev" class="nav-btn">&#9664;</button>
+        <h2 id="month-label"></h2>
+        <button id="month-next" class="nav-btn">&#9654;</button>
+      </div>
+      <div class="table-wrap">
+        <table id="month-table" class="grid-table">
+          <thead><tr id="month-thead"></tr></thead>
+          <tbody id="month-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
