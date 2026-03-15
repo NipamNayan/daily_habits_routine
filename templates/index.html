@@ -18,30 +18,48 @@
 
     <!-- TODAY VIEW -->
     <section id="view-today" class="view active">
-      <div class="view-header">
-        <button id="today-prev" class="nav-btn">&#9664;</button>
-        <h2 id="today-date-label"></h2>
-        <button id="today-next" class="nav-btn">&#9654;</button>
-      </div>
-      <div class="progress-bar-wrapper">
-        <div class="progress-bar" id="today-progress"></div>
-      </div>
-      <p class="progress-text" id="today-progress-text"></p>
-      <ul id="task-list" class="task-list"></ul>
-
-      <!-- Manage button -->
-      <button id="manage-btn" class="manage-btn">&#9881; Manage Tasks</button>
-
-      <!-- Edit panel (hidden by default) -->
-      <div id="edit-panel" class="edit-panel hidden">
-        <div class="edit-panel-header">
-          <h3>Manage Tasks</h3>
-          <button id="edit-panel-close" class="edit-close-btn">&times;</button>
+      <div class="today-header-wrap">
+        <div class="view-header">
+          <button id="today-prev" class="nav-btn">&#9664;</button>
+          <h2 id="today-date-label"></h2>
+          <button id="today-next" class="nav-btn">&#9654;</button>
         </div>
-        <ul id="edit-task-list" class="edit-task-list"></ul>
-        <div class="add-task-row">
-          <input type="text" id="new-task-input" placeholder="New task name..." />
-          <button id="add-task-btn" class="add-btn">+ Add</button>
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar" id="today-progress"></div>
+        </div>
+        <p class="progress-text" id="today-progress-text"></p>
+      </div>
+
+      <div class="today-columns">
+        <!-- LEFT: habits -->
+        <div class="today-left">
+          <ul id="task-list" class="task-list"></ul>
+          <button id="manage-btn" class="manage-btn">&#9881; Manage Tasks</button>
+          <div id="edit-panel" class="edit-panel hidden">
+            <div class="edit-panel-header">
+              <h3>Manage Tasks</h3>
+              <button id="edit-panel-close" class="edit-close-btn">&times;</button>
+            </div>
+            <ul id="edit-task-list" class="edit-task-list"></ul>
+            <div class="add-task-row">
+              <input type="text" id="new-task-input" placeholder="New task name..." />
+              <button id="add-task-btn" class="add-btn">+ Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: misc -->
+        <div class="today-right">
+          <div class="misc-section">
+            <div class="misc-section-header">
+              <h3>&#128203; Alternate Plan - Tasks to Do</h3>
+            </div>
+            <ul id="misc-task-list" class="misc-task-list"></ul>
+            <div class="add-task-row misc-add-row">
+              <input type="text" id="misc-task-input" placeholder="Add a task..." />
+              <button id="misc-add-btn" class="add-btn">+ Add</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

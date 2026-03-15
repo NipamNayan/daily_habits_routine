@@ -345,3 +345,117 @@ h1 {
   .grid-table thead th:first-child,
   .grid-table tbody td:first-child { min-width: 120px; }
 }
+
+/* ---------- Zoom controls ---------- */
+.zoom-controls {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 100;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+.zoom-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: .2s;
+  line-height: 1;
+}
+.zoom-btn:hover { background: var(--accent); color: #fff; }
+.zoom-label {
+  font-size: .78rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  min-width: 34px;
+  text-align: center;
+}
+
+/* ---------- Alternate Plan - Tasks to Do ---------- */
+.misc-section {
+  margin-top: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  animation: slideDown .25s ease;
+}
+
+.misc-section-header {
+  margin-bottom: 12px;
+}
+.misc-section-header h3 {
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: .3px;
+}
+
+.misc-task-list { list-style: none; }
+.misc-task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  transition: border-color .2s;
+  cursor: pointer;
+  user-select: none;
+}
+.misc-task-item:hover { border-color: var(--accent); }
+.misc-task-item.done {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+.misc-task-item.done .misc-task-title {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+.misc-task-item .checkbox {
+  width: 22px; height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  transition: .2s;
+}
+.misc-task-item.done .checkbox {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}
+.misc-task-title {
+  flex: 1;
+  font-size: .9rem;
+  font-weight: 500;
+}
+.misc-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: .2s;
+  line-height: 1;
+}
+.misc-delete-btn:hover { color: var(--red); }
+
+.misc-add-row { margin-top: 10px; }

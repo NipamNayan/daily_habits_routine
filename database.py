@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, UniqueConstraint
+from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -32,6 +32,15 @@ class TaskCompletion(Base):
     __table_args__ = (UniqueConstraint("task_id", "completion_date", name="uq_task_date"),)
 
     task = relationship("Task", back_populates="completions")
+
+
+class MiscTask(Base):
+    __tablename__ = "misc_tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    task_date = Column(Date, nullable=False)
+    done = Column(Boolean, default=False)
 
 
 DEFAULT_TASKS = [

@@ -9,7 +9,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 import calendar
 
-from database import init_db, get_db, Task, TaskCompletion
+from database import init_db, get_db, Task, TaskCompletion, MiscTask
 
 app = FastAPI(title="Daily To-Do Tracker")
 
@@ -38,6 +38,15 @@ class TaskCreate(BaseModel):
 
 class TaskRename(BaseModel):
     name: str
+
+
+class MiscTaskCreate(BaseModel):
+    title: str
+    date: str
+
+
+class MiscTaskToggle(BaseModel):
+    id: int
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -195,3 +204,44 @@ def rename_task(task_id: int, body: TaskRename, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(task)
     return task
+
+
+# ===================================================================
+#  MISC TASKS
+# ===================================================================
+
+@app.get("/api/misc")
+def get_misc_tasks(date: Optional[str] = None, db: Session = Depends(get_db)):
+    d = datetime.strptime(date, "%Y-%m-%d").date() if date else datetime.today().date()
+    tasks = db.query(MiscTask).filter(MiscTask.task_date == d).order_by(MiscTask.id).all()
+    return [{"id": t.id, "title": t.title, "done": t.done} for t in tasks]
+
+
+@app.post("/api/misc")
+def create_misc_task(body: MiscTaskCreate, db: Session = Depends(get_db)):
+    d = datetime.strptime(body.date, "%Y-%m-%d").date()
+    task = MiscTask(title=body.title.strip(), task_date=d, done=False)
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return {"id": task.id, "title": task.title, "done": task.done}
+
+
+@app.post("/api/misc/toggle")
+def toggle_misc_task(body: MiscTaskToggle, db: Session = Depends(get_db)):
+    task = db.query(MiscTask).filter(MiscTask.id == body.id).first()
+    if not task:
+        raise HTTPException(404, "Misc task not found")
+    task.done = not task.done
+    db.commit()
+    return {"id": task.id, "done": task.done}
+
+
+@app.delete("/api/misc/{task_id}")
+def delete_misc_task(task_id: int, db: Session = Depends(get_db)):
+    task = db.query(MiscTask).filter(MiscTask.id == task_id).first()
+    if not task:
+        raise HTTPException(404, "Misc task not found")
+    db.delete(task)
+    db.commit()
+    return {"deleted": True}

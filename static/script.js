@@ -61,6 +61,8 @@ async function loadToday() {
   const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
   document.getElementById('today-progress').style.width = pct + '%';
   document.getElementById('today-progress-text').textContent = `${doneCount}/${tasks.length} done (${pct}%)`;
+
+  loadMiscTasks(dateStr);
 }
 
 async function toggleTask(taskId, dateStr) {
@@ -283,3 +285,64 @@ async function addNewTask() {
 
 // ===== Init =====
 loadToday();
+
+// ===================================================================
+//  MISC TASKS
+// ===================================================================
+async function loadMiscTasks(dateStr) {
+  const res = await fetch(`${API}/api/misc?date=${dateStr}`);
+  const tasks = await res.json();
+
+  const ul = document.getElementById('misc-task-list');
+  ul.innerHTML = '';
+
+  tasks.forEach(t => {
+    const li = document.createElement('li');
+    li.className = `misc-task-item${t.done ? ' done' : ''}`;
+    li.innerHTML = `
+      <span class="checkbox">${t.done ? '\u2713' : ''}</span>
+      <span class="misc-task-title">${t.title}</span>
+      <button class="delete-btn misc-delete-btn" title="Delete">&times;</button>
+    `;
+    li.querySelector('.checkbox').addEventListener('click', () => toggleMiscTask(t.id, dateStr));
+    li.querySelector('.misc-task-title').addEventListener('click', () => toggleMiscTask(t.id, dateStr));
+    li.querySelector('.misc-delete-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteMiscTask(t.id, dateStr);
+    });
+    ul.appendChild(li);
+  });
+}
+
+async function toggleMiscTask(id, dateStr) {
+  await fetch(`${API}/api/misc/toggle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  loadMiscTasks(dateStr);
+}
+
+async function deleteMiscTask(id, dateStr) {
+  await fetch(`${API}/api/misc/${id}`, { method: 'DELETE' });
+  loadMiscTasks(dateStr);
+}
+
+document.getElementById('misc-add-btn').addEventListener('click', addMiscTask);
+document.getElementById('misc-task-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addMiscTask();
+});
+
+async function addMiscTask() {
+  const input = document.getElementById('misc-task-input');
+  const title = input.value.trim();
+  if (!title) return;
+  const dateStr = fmt(currentDate);
+  await fetch(`${API}/api/misc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, date: dateStr }),
+  });
+  input.value = '';
+  loadMiscTasks(dateStr);
+}
