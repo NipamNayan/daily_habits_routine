@@ -39,12 +39,12 @@ document.querySelectorAll('.tab').forEach(btn => {
 // ===================================================================
 const DAY_CONTEXTS = {
   0: { label: 'Rest Day', emoji: '🌿', sub: 'Sunday is fully protected — rest without guilt', color: '#27ae60', type: 'rest' },
-  1: { label: 'Build Lane Day', emoji: '🔨', sub: 'Mon · JOB block: PySpark / LangChain / RAG (90 min)', color: '#3498db', type: 'job' },
-  2: { label: 'Depth Lane Day', emoji: '📖', sub: 'Tue · JOB block: DDIA + Design Patterns (90 min)', color: '#9b59b6', type: 'job' },
-  3: { label: 'Build Lane Day', emoji: '🔨', sub: 'Wed · JOB block: PySpark / LangChain / RAG (90 min)', color: '#3498db', type: 'job' },
-  4: { label: 'Depth Lane Day', emoji: '📖', sub: 'Thu · JOB block: DDIA + Design Patterns (90 min)', color: '#9b59b6', type: 'job' },
-  5: { label: 'Build Lane Day', emoji: '🔨', sub: 'Fri · JOB block: PySpark / LangChain / RAG (90 min)', color: '#3498db', type: 'job' },
-  6: { label: 'Review + RAG Day', emoji: '✅', sub: 'Sat · RAG build + 15-min weekly retrospective', color: '#e67e22', type: 'review' },
+  1: { label: 'APSC Focus Day', emoji: '📚', sub: 'Mon · Deep APSC study — Syllabus, notes, revision', color: '#e67e22', type: 'apsc' },
+  2: { label: 'Tech Prep Day', emoji: '💻', sub: 'Tue · DDIA + Design Patterns + DSA', color: '#3498db', type: 'job' },
+  3: { label: 'APSC Focus Day', emoji: '📚', sub: 'Wed · Deep APSC study — Syllabus, notes, revision', color: '#e67e22', type: 'apsc' },
+  4: { label: 'Tech Prep Day', emoji: '💻', sub: 'Thu · DDIA + Design Patterns + DSA', color: '#3498db', type: 'job' },
+  5: { label: 'APSC Focus Day', emoji: '📚', sub: 'Fri · Deep APSC study — Syllabus, notes, revision', color: '#e67e22', type: 'apsc' },
+  6: { label: 'Tech Prep + Project Day', emoji: '🚀', sub: 'Sat · PySpark / LangChain / RAG build + weekly review', color: '#9b59b6', type: 'review' },
 };
 
 function renderDayBanner(date) {
@@ -288,7 +288,7 @@ async function loadEditList() {
         <option value="personal" ${t.category === 'personal' ? 'selected' : ''}>💪 Personal</option>
       </select>
       <select class="cat-select task-goal-select" data-id="${t.id}">
-        <option value="0" ${!t.goal_id ? 'selected' : ''}>No goal</option>
+        <option value="0" ${!t.goal_id ? 'selected' : ''}>⚪ General</option>
         ${goalOptions}
       </select>
       <button class="optional-btn${t.optional ? ' optional-on' : ''}" data-id="${t.id}" title="Mark optional">⚡</button>

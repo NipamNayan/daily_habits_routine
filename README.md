@@ -20,9 +20,9 @@ A goal-aware daily habit & task tracker built with **FastAPI** and **SQLite**. D
 |-------|------|------|
 | A | 30 min | APSC — Current Affairs + Assam GK (every day) |
 | B | 30 min | APSC — PYQ Practice / active recall (every day) |
-| C Mon/Wed/Fri | 90 min | JOB **Build Lane** — PySpark / LangChain / RAG |
-| C Tue/Thu | 90 min | JOB **Depth Lane** — DDIA + Design Patterns |
-| C Sat | 90 min | RAG build + 15-min weekly retrospective |
+| Mon / Wed / Fri | — | 📚 **APSC Focus** — deep syllabus study, notes, revision |
+| Tue / Thu | — | 💻 **Tech Prep** — DDIA + Design Patterns + DSA |
+| Sat | — | 🚀 **Tech Prep + Project** — PySpark / LangChain / RAG build + weekly review |
 | Sun | — | Full rest — protected |
 
 ## Tech Stack
