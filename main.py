@@ -9,7 +9,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 import calendar
 
-from database import init_db, get_db, Task, TaskCompletion, MiscTask
+from database import init_db, get_db, Task, TaskCompletion, MiscTask, Goal
 
 app = FastAPI(title="Daily To-Do Tracker")
 
@@ -19,10 +19,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
+# ── Task Pydantic models ──────────────────────────────────────────────────────
+
 class TaskOut(BaseModel):
     id: int
     name: str
     order: int
+    category: str = "general"
+    goal_id: Optional[int] = None
+    optional: bool = False
     class Config:
         from_attributes = True
 
@@ -34,10 +39,16 @@ class ToggleRequest(BaseModel):
 
 class TaskCreate(BaseModel):
     name: str
+    category: str = "general"
+    goal_id: Optional[int] = None
+    optional: bool = False
 
 
-class TaskRename(BaseModel):
-    name: str
+class TaskUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    goal_id: Optional[int] = None
+    optional: Optional[bool] = None
 
 
 class MiscTaskCreate(BaseModel):
@@ -49,9 +60,38 @@ class MiscTaskToggle(BaseModel):
     id: int
 
 
+# ── Goal Pydantic models ──────────────────────────────────────────────────────
+
+class GoalOut(BaseModel):
+    id: int
+    name: str
+    emoji: str
+    color: str
+    description: str
+    active: bool
+    sort_order: int
+    class Config:
+        from_attributes = True
+
+
+class GoalCreate(BaseModel):
+    name: str
+    emoji: str = "🎯"
+    color: str = "#6c63ff"
+    description: str = ""
+
+
+class GoalUpdate(BaseModel):
+    name: Optional[str] = None
+    emoji: Optional[str] = None
+    color: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = None
+
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 
 @app.get("/api/tasks", response_model=List[TaskOut])
@@ -90,10 +130,22 @@ def get_today_status(for_date: Optional[str] = None, db: Session = Depends(get_d
         .all()
     )
     done_ids = {c.task_id for c in completions}
-    return [
-        {"task_id": t.id, "task_name": t.name, "done": t.id in done_ids}
-        for t in tasks
-    ]
+    # build goal lookup
+    goals = {g.id: g for g in db.query(Goal).all()}
+    result = []
+    for t in tasks:
+        g = goals.get(t.goal_id) if t.goal_id else None
+        result.append({
+            "task_id": t.id,
+            "task_name": t.name,
+            "done": t.id in done_ids,
+            "category": t.category or "general",
+            "goal_id": t.goal_id,
+            "optional": bool(t.optional),
+            "goal_color": g.color if g else None,
+            "goal_emoji": g.emoji if g else None,
+        })
+    return result
 
 
 @app.get("/api/week")
@@ -115,16 +167,19 @@ def get_week_view(week_offset: int = 0, db: Session = Depends(get_db)):
         days = {}
         done_count = 0
         for i, wd in enumerate(week_dates):
-            done = (t.id, wd) in done_set
-            days[day_labels[i]] = done
-            if done:
-                done_count += 1
+            if day_labels[i] == "Sun":
+                days["Sun"] = "rest"  # Sunday is always a rest day
+            else:
+                done = (t.id, wd) in done_set
+                days[day_labels[i]] = done
+                if done:
+                    done_count += 1
         rows.append({
             "task_id": t.id,
             "task_name": t.name,
             "days": days,
             "done_count": done_count,
-            "total": 7,
+            "total": 6,
         })
     return {
         "week_start": monday.isoformat(),
@@ -149,28 +204,34 @@ def get_month_view(year: Optional[int] = None, month: Optional[int] = None, db: 
         .all()
     )
     done_set = {(c.task_id, c.completion_date) for c in completions}
+    # count active (non-Sunday) days in the month
+    active_days = sum(1 for d in range(1, num_days + 1) if date(y, m, d).weekday() != 6)
     rows = []
     for t in tasks:
         days = {}
         done_count = 0
         for d in range(1, num_days + 1):
             dt = date(y, m, d)
-            done = (t.id, dt) in done_set
-            days[d] = done
-            if done:
-                done_count += 1
+            if dt.weekday() == 6:  # Sunday
+                days[d] = "rest"
+            else:
+                done = (t.id, dt) in done_set
+                days[d] = done
+                if done:
+                    done_count += 1
         rows.append({
             "task_id": t.id,
             "task_name": t.name,
             "days": days,
             "done_count": done_count,
-            "total": num_days,
+            "total": active_days,
         })
     return {
         "year": y,
         "month": m,
         "month_name": calendar.month_name[m],
         "num_days": num_days,
+        "active_days": active_days,
         "rows": rows,
     }
 
@@ -178,7 +239,10 @@ def get_month_view(year: Optional[int] = None, month: Optional[int] = None, db: 
 @app.post("/api/tasks", response_model=TaskOut)
 def create_task(body: TaskCreate, db: Session = Depends(get_db)):
     max_order = db.query(Task).count()
-    task = Task(name=body.name.strip(), order=max_order)
+    task = Task(
+        name=body.name.strip(), order=max_order,
+        category=body.category, goal_id=body.goal_id, optional=body.optional,
+    )
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -196,14 +260,105 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 
 
 @app.put("/api/tasks/{task_id}", response_model=TaskOut)
-def rename_task(task_id: int, body: TaskRename, db: Session = Depends(get_db)):
+def update_task(task_id: int, body: TaskUpdate, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
         raise HTTPException(404, "Task not found")
-    task.name = body.name.strip()
+    if body.name is not None:
+        task.name = body.name.strip()
+    if body.category is not None:
+        task.category = body.category
+    if body.goal_id is not None or body.goal_id == 0:
+        task.goal_id = body.goal_id if body.goal_id != 0 else None
+    if body.optional is not None:
+        task.optional = body.optional
     db.commit()
     db.refresh(task)
     return task
+
+
+# ── Goal endpoints ────────────────────────────────────────────────────────────
+
+@app.get("/api/goals", response_model=List[GoalOut])
+def get_goals(db: Session = Depends(get_db)):
+    return db.query(Goal).filter(Goal.active == True).order_by(Goal.sort_order).all()
+
+
+@app.post("/api/goals", response_model=GoalOut)
+def create_goal(body: GoalCreate, db: Session = Depends(get_db)):
+    max_order = db.query(Goal).count()
+    goal = Goal(
+        name=body.name.strip(), emoji=body.emoji,
+        color=body.color, description=body.description, sort_order=max_order,
+    )
+    db.add(goal)
+    db.commit()
+    db.refresh(goal)
+    return goal
+
+
+@app.put("/api/goals/{goal_id}", response_model=GoalOut)
+def update_goal(goal_id: int, body: GoalUpdate, db: Session = Depends(get_db)):
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if not goal:
+        raise HTTPException(404, "Goal not found")
+    if body.name is not None:
+        goal.name = body.name.strip()
+    if body.emoji is not None:
+        goal.emoji = body.emoji
+    if body.color is not None:
+        goal.color = body.color
+    if body.description is not None:
+        goal.description = body.description
+    if body.active is not None:
+        goal.active = body.active
+    db.commit()
+    db.refresh(goal)
+    return goal
+
+
+@app.delete("/api/goals/{goal_id}")
+def delete_goal(goal_id: int, db: Session = Depends(get_db)):
+    goal = db.query(Goal).filter(Goal.id == goal_id).first()
+    if not goal:
+        raise HTTPException(404, "Goal not found")
+    # unlink tasks before deleting
+    db.query(Task).filter(Task.goal_id == goal_id).update({"goal_id": None})
+    db.delete(goal)
+    db.commit()
+    return {"deleted": True}
+
+
+@app.get("/api/goals/{goal_id}/stats")
+def get_goal_stats(goal_id: int, db: Session = Depends(get_db)):
+    today = date.today()
+    week_ago = today - timedelta(days=6)
+    tasks = db.query(Task).filter(Task.goal_id == goal_id).all()
+    if not tasks:
+        return {"goal_id": goal_id, "task_count": 0, "week_pct": 0, "streak": 0,
+                "completed_last_7": 0, "possible_last_7": 0}
+    task_ids = [t.id for t in tasks]
+    completions = (
+        db.query(TaskCompletion)
+        .filter(TaskCompletion.task_id.in_(task_ids), TaskCompletion.completion_date >= week_ago)
+        .all()
+    )
+    done_set = {(c.task_id, c.completion_date) for c in completions}
+    total_possible = len(tasks) * 7
+    total_done = len(done_set)
+    week_pct = round(total_done / total_possible * 100) if total_possible else 0
+    streak = 0
+    for i in range(7):
+        d = today - timedelta(days=i)
+        if any((t.id, d) in done_set for t in tasks):
+            streak += 1
+        else:
+            break
+    return {
+        "goal_id": goal_id, "task_count": len(tasks),
+        "week_pct": week_pct, "streak": streak,
+        "completed_last_7": total_done, "possible_last_7": total_possible,
+    }
 
 
 # ===================================================================

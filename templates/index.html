@@ -3,21 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily To-Do Tracker</title>
+  <title>Daily Tracker</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>&#x1F4CB; Daily To-Do Tracker</h1>
+    <h1>&#x1F4CB; Daily Tracker</h1>
 
     <nav class="tabs">
       <button class="tab active" data-view="today">Today</button>
+      <button class="tab" data-view="goals">Goals</button>
       <button class="tab" data-view="week">Week</button>
       <button class="tab" data-view="month">Month</button>
     </nav>
 
     <!-- TODAY VIEW -->
     <section id="view-today" class="view active">
+      <!-- Day context banner -->
+      <div id="day-banner" class="day-banner"></div>
+
       <div class="today-header-wrap">
         <div class="view-header">
           <button id="today-prev" class="nav-btn">&#9664;</button>
@@ -27,7 +31,13 @@
         <div class="progress-bar-wrapper">
           <div class="progress-bar" id="today-progress"></div>
         </div>
-        <p class="progress-text" id="today-progress-text"></p>
+        <div class="today-meta-row">
+          <p class="progress-text" id="today-progress-text"></p>
+          <label class="light-mode-toggle" title="Show only required tasks">
+            <input type="checkbox" id="light-mode-cb" />
+            <span>&#9889; Light Day</span>
+          </label>
+        </div>
       </div>
 
       <div class="today-columns">
@@ -43,6 +53,12 @@
             <ul id="edit-task-list" class="edit-task-list"></ul>
             <div class="add-task-row">
               <input type="text" id="new-task-input" placeholder="New task name..." />
+              <select id="new-task-category" class="cat-select">
+                <option value="general">General</option>
+                <option value="apsc">📚 APSC</option>
+                <option value="job">💼 Job</option>
+                <option value="personal">💪 Personal</option>
+              </select>
               <button id="add-task-btn" class="add-btn">+ Add</button>
             </div>
           </div>
@@ -52,7 +68,7 @@
         <div class="today-right">
           <div class="misc-section">
             <div class="misc-section-header">
-              <h3>&#128203; Alternate Plan - Tasks to Do</h3>
+              <h3>&#128203; Alternate / Ad-hoc Tasks</h3>
             </div>
             <ul id="misc-task-list" class="misc-task-list"></ul>
             <div class="add-task-row misc-add-row">
@@ -62,6 +78,31 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- GOALS VIEW -->
+    <section id="view-goals" class="view">
+      <div class="goals-header">
+        <h2>Your Goals</h2>
+        <button id="add-goal-btn" class="add-goal-btn">&#43; Add Goal</button>
+      </div>
+
+      <!-- Add/Edit Goal Form -->
+      <div id="goal-form" class="goal-form hidden">
+        <div class="goal-form-row">
+          <input type="text" id="goal-form-emoji" class="goal-emoji-input" placeholder="🎯" maxlength="4" />
+          <input type="text" id="goal-form-name" class="goal-name-input" placeholder="Goal name..." />
+          <input type="color" id="goal-form-color" class="goal-color-input" value="#6c63ff" />
+        </div>
+        <textarea id="goal-form-desc" class="goal-desc-input" placeholder="Short description (optional)..." rows="2"></textarea>
+        <div class="goal-form-actions">
+          <button id="goal-form-save" class="add-btn">Save</button>
+          <button id="goal-form-cancel" class="cancel-btn">Cancel</button>
+        </div>
+        <input type="hidden" id="goal-form-id" value="" />
+      </div>
+
+      <div id="goals-list" class="goals-list"></div>
     </section>
 
     <!-- WEEK VIEW -->
